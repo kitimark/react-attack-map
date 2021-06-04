@@ -1,4 +1,4 @@
-import { FC, HTMLAttributes, SVGAttributes, useEffect, useRef, useState } from 'react';
+import { FC, SVGAttributes, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
 import { GeoPermissibleObjects } from 'd3-geo';
@@ -38,6 +38,69 @@ const Country: FC<CountryProps> = ({ shape, ...props }) => {
   )
 }
 
+function getDrawPath(e: number, t: number, a: number, r: number) {
+  const samePlace = e === a && t === r;
+  var o = 3 * Math.random();
+  if (samePlace) {
+    var i = 25 + 10 * o;
+    return `M  ${e} ${t} c ${i} ${-i} ${-i} ${-i} 0 0`;
+  }
+  var E = (e + a) / 2,
+    c = (t + r) / 2,
+    A = 2 * Math.random();
+  return (
+    `M ${e} ${t} S ${E + 30 * o} ${Math.abs(c - 20 ** A)} ${a} ${r}`
+  );
+}
+
+interface AttackProps {
+  pos1: [number, number];
+  pos2: [number, number];
+}
+
+const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
+  const ref = useRef<SVGPathElement>(null)
+  useEffect(() => {
+    const length = ref.current?.getTotalLength() || 0;
+    const path = d3.select(ref.current);
+
+    path
+      .attr('stroke-dasharray', length)
+      .attr('stroke-dashoffset', length)
+      .attr('stroke', 'red')
+      .transition()
+        .duration(500)
+      .transition()
+        .duration(1500)
+        .ease(d3.easeExpInOut)
+        .attr('stroke', 'blue')
+        .attr('stroke-dashoffset', 0)
+      .transition()
+        .duration(1500)
+        .ease(d3.easeExpInOut)
+        .attr('stroke', 'red')
+        .attr('stroke-dashoffset', -length)
+      // .transition()
+      //   .duration(500)
+      //   .remove()
+  }, [ref.current, pos1, pos2])
+
+  return (
+    <g>
+      <path
+        ref={ref}
+        fill="none"
+        stroke="transparent"
+        strokeWidth="2px"
+        style={{
+          zIndex: 100,
+        }}
+        d={getDrawPath(pos1[0], pos1[1], pos2[0], pos2[1])}
+      />
+    </g>
+  )
+}
+
 const Map = ({ projectionName = "geoArmadillo" }) => {
   // grab our custom React hook we defined above
   const [ref, dms] = useChartDimensions({})
@@ -51,10 +114,8 @@ const Map = ({ projectionName = "geoArmadillo" }) => {
     .fitWidth(dms.width, sphere)
   const pathGenerator = d3.geoPath(projection)
 
-  console.log('pos', projection([-155.54211, 19.08348]))
-  console.log('shape', pathGenerator(countryShapes.features[0] as any))
-
-  const pos = projection([-155.54211, 19.08348]) || [];
+  const pos1 = projection([-123.51000158755114,48.51001089130344]) as [number, number];
+  const pos2 = projection([102.5849324890267,12.186594956913282]) as [number, number];
   // size the svg to fit the height of the map
   const [
     [x0, y0],
@@ -72,13 +133,13 @@ const Map = ({ projectionName = "geoArmadillo" }) => {
       <svg width={dms.width} height={height}>
         <defs>
           <pattern id="Map__default" width="6" height="6" patternUnits="userSpaceOnUse">
-            <circle cx="3" cy="3" r="2" fill="black" />
+            <circle cx="3" cy="3" r="2" fill="#808080" />
           </pattern>
           <pattern id="Map__mouse-over" width="6" height="6" patternUnits="userSpaceOnUse">
             <circle cx="3" cy="3" r="2" fill="#9980FA" />
           </pattern>
         </defs>
-        <circle cx={pos[0]} cy={pos[1]} r="2"/>
+        <circle cx={pos1[0]} cy={pos1[1]} r="2"/>
         <g style={{ clipPath: "url(#Map__default)" }}>
           {countryShapes.features
             .map((shape) => {
@@ -94,16 +155,13 @@ const Map = ({ projectionName = "geoArmadillo" }) => {
             )
           })}
         </g>
+        <Attack pos1={pos1} pos2={pos2} />
       </svg>
     </div>
   )
 }
 
 function App() {
-  useEffect(() => {
-
-  }, [])
-
   return (
     <Map projectionName="geoMiller" />
   );
