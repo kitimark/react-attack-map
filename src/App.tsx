@@ -53,6 +53,60 @@ function getDrawPath(e: number, t: number, a: number, r: number) {
   );
 }
 
+interface BoomProps {
+  pos: [number, number];
+}
+
+const Boom: FC<BoomProps> = ({ pos }) => {
+  const ref = useRef<SVGGElement>(null);
+
+  useEffect(() => {
+    const path = d3.select(ref.current)
+
+    path.attr('opacity', 0)
+      .transition()
+        .duration(2000)
+      .transition()
+        .duration(500)
+        .ease(d3.easeExpOut)
+        .attr('opacity', .75)
+      .transition()
+        .duration(1000)
+      .transition()
+        .duration(2000)
+        .ease(d3.easeExpOut)
+        .attr('opacity', 0)
+  }, [ref.current]);
+  
+  return (
+    <g ref={ref}>
+      <circle 
+        cx={pos[0]} 
+        cy={pos[1]} 
+        r="20" 
+        stroke="red" 
+        fill="red" 
+        opacity=".45" 
+      />
+      <circle
+        cx={pos[0]} 
+        cy={pos[1]} 
+        r="8" 
+        stroke="red" 
+        fill="red" 
+      />
+      <circle
+        cx={pos[0]} 
+        cy={pos[1]} 
+        r="14" 
+        stroke="red" 
+        strokeWidth="2px"
+        fill="transparent" 
+      />
+    </g>
+  )
+}
+
 interface AttackProps {
   pos1: [number, number];
   pos2: [number, number];
@@ -73,12 +127,12 @@ const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
       .transition()
         .duration(1500)
         .ease(d3.easeExpInOut)
-        .attr('stroke', 'blue')
+        // .attr('stroke', 'blue')
         .attr('stroke-dashoffset', 0)
       .transition()
         .duration(1500)
         .ease(d3.easeExpInOut)
-        .attr('stroke', 'red')
+        // .attr('stroke', 'red')
         .attr('stroke-dashoffset', -length)
       // .transition()
       //   .duration(500)
@@ -87,6 +141,7 @@ const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
 
   return (
     <g>
+      <Boom pos={pos2} />
       <path
         ref={ref}
         fill="none"
@@ -155,7 +210,9 @@ const Map = ({ projectionName = "geoArmadillo" }) => {
             )
           })}
         </g>
-        <Attack pos1={pos1} pos2={pos2} />
+        {new Array(1).fill(null).map((_, index) => 
+          <Attack key={index} pos1={pos1} pos2={pos2} />
+        )}
       </svg>
     </div>
   )
