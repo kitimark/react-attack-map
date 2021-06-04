@@ -4,10 +4,6 @@ import { ResizeObserver } from '@juggle/resize-observer'
 const combineChartDimensions = (dimensions: any) => {
   const parsedDimensions = {
       ...dimensions,
-      marginTop: dimensions.marginTop || 10,
-      marginRight: dimensions.marginRight || 10,
-      marginBottom: dimensions.marginBottom || 40,
-      marginLeft: dimensions.marginLeft || 75,
   }
   return {
       ...parsedDimensions,
