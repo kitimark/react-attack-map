@@ -1,4 +1,4 @@
-import { FC, SVGAttributes, useEffect, useRef } from 'react';
+import { FC, SVGAttributes, useEffect, useRef, memo } from 'react';
 import * as d3 from 'd3';
 import * as d3Geo from 'd3-geo';
 import { GeoPermissibleObjects } from 'd3-geo';
@@ -57,7 +57,7 @@ interface BoomProps {
   pos: [number, number];
 }
 
-const Boom: FC<BoomProps> = ({ pos }) => {
+const Boom: FC<BoomProps> = memo(({ pos }) => {
   const ref = useRef<SVGGElement>(null);
 
   useEffect(() => {
@@ -105,14 +105,14 @@ const Boom: FC<BoomProps> = ({ pos }) => {
       />
     </g>
   )
-}
+})
 
 interface AttackProps {
   pos1: [number, number];
   pos2: [number, number];
 }
 
-const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
+const Attack: FC<AttackProps> = memo(({ pos1, pos2 }) => {
   const ref = useRef<SVGPathElement>(null)
   useEffect(() => {
     const length = ref.current?.getTotalLength() || 0;
@@ -127,17 +127,12 @@ const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
       .transition()
         .duration(1500)
         .ease(d3.easeExpInOut)
-        // .attr('stroke', 'blue')
         .attr('stroke-dashoffset', 0)
       .transition()
         .duration(1500)
         .ease(d3.easeExpInOut)
-        // .attr('stroke', 'red')
         .attr('stroke-dashoffset', -length)
-      // .transition()
-      //   .duration(500)
-      //   .remove()
-  }, [ref.current, pos1, pos2])
+  }, [ref.current])
 
   return (
     <g>
@@ -154,7 +149,7 @@ const Attack: FC<AttackProps> = ({ pos1, pos2 }) => {
       />
     </g>
   )
-}
+});
 
 const Map = ({ projectionName = "geoArmadillo" }) => {
   // grab our custom React hook we defined above
